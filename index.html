@@ -1,0 +1,197 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PersonalAI Assistant</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&display=swap');
+        
+        .orbitron {
+            font-family: 'Orbitron', sans-serif;
+        }
+
+        .glow {
+            box-shadow: 0 0 15px #38bdf8;
+        }
+
+        @keyframes pulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+            100% { transform: scale(1); }
+        }
+
+        .pulse {
+            animation: pulse 2s infinite;
+        }
+
+        .robot-bg {
+            background: linear-gradient(rgba(0,0,0,0.7), rgba(0,0,0,0.7)), url('https://images.unsplash.com/photo-1485827404703-89b55fcc595e?auto=format&fit=crop&q=80');
+            background-size: cover;
+            background-position: center;
+        }
+    </style>
+</head>
+<body class="bg-gray-900 text-white robot-bg min-h-screen">
+    <div class="container mx-auto px-4 py-8">
+        <!-- Header -->
+        <header class="text-center mb-12">
+            <h1 class="orbitron text-4xl md:text-6xl font-bold text-sky-400 mb-4">PersonalAI</h1>
+            <p class="text-gray-300">Your Intelligent Personal Assistant</p>
+        </div>
+
+        <!-- Main Interface -->
+        <div class="max-w-3xl mx-auto">
+            <!-- AI Avatar -->
+            <div class="relative w-48 h-48 mx-auto mb-8">
+                <div class="absolute inset-0 bg-sky-500 rounded-full opacity-20 glow pulse"></div>
+                <div class="absolute inset-2 bg-sky-400 rounded-full flex items-center justify-center">
+                    <i class="bi bi-robot text-6xl text-white"></i>
+                </div>
+            </div>
+
+            <!-- Voice Interface -->
+            <div class="bg-gray-800/80 p-6 rounded-lg backdrop-blur-sm mb-8">
+                <div class="text-center mb-4">
+                    <button id="startBtn" class="bg-sky-500 hover:bg-sky-600 text-white font-bold py-3 px-6 rounded-full transition-all duration-300">
+                        <i class="bi bi-mic-fill mr-2"></i>Start Listening
+                    </button>
+                </div>
+                <div id="output" class="h-32 overflow-y-auto p-4 bg-gray-900/50 rounded text-gray-300">
+                    Waiting for your command...
+                </div>
+            </div>
+
+            <!-- Quick Actions -->
+            <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+                <button class="bg-gray-800/80 p-4 rounded-lg hover:bg-sky-500/20 transition-all">
+                    <i class="bi bi-alarm text-2xl mb-2"></i>
+                    <p>Set Alarm</p>
+                </button>
+                <button class="bg-gray-800/80 p-4 rounded-lg hover:bg-sky-500/20 transition-all">
+                    <i class="bi bi-envelope text-2xl mb-2"></i>
+                    <p>Send Email</p>
+                </button>
+                <button class="bg-gray-800/80 p-4 rounded-lg hover:bg-sky-500/20 transition-all">
+                    <i class="bi bi-telephone text-2xl mb-2"></i>
+                    <p>Make Call</p>
+                </button>
+                <button class="bg-gray-800/80 p-4 rounded-lg hover:bg-sky-500/20 transition-all">
+                    <i class="bi bi-car-front text-2xl mb-2"></i>
+                    <p>Drive Mode</p>
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let recognition;
+        let isListening = false;
+        let driveMode = false;
+
+        if ('webkitSpeechRecognition' in window) {
+            recognition = new webkitSpeechRecognition();
+            recognition.continuous = true;
+            recognition.interimResults = true;
+
+            recognition.onresult = (event) => {
+                const command = event.results[event.results.length - 1][0].transcript.toLowerCase();
+                updateOutput(`You said: ${command}`);
+                processCommand(command);
+            };
+
+            recognition.onerror = (event) => {
+                console.error('Speech recognition error:', event.error);
+                updateOutput('Error: ' + event.error);
+            };
+        }
+
+        function updateOutput(text) {
+            const output = document.getElementById('output');
+            output.innerHTML = `<div class="mb-2">${text}</div>` + output.innerHTML;
+        }
+
+        function processCommand(command) {
+            if (command.includes('alarm')) {
+                // Set alarm logic
+                const time = command.match(/\d{1,2}(?::\d{2})?\s*(?:am|pm)?/i);
+                if (time) {
+                    updateOutput(`Setting alarm for ${time[0]}`);
+                    // Implementation for setting alarm
+                }
+            } else if (command.includes('email')) {
+                updateOutput('Opening email composer...');
+                // Email logic
+            } else if (command.includes('call')) {
+                const name = command.replace('call', '').trim();
+                updateOutput(`Calling ${name}...`);
+                // Call logic
+            } else if (command.includes('drive mode')) {
+                toggleDriveMode();
+            }
+        }
+
+        function toggleDriveMode() {
+            driveMode = !driveMode;
+            if (driveMode) {
+                updateOutput('Drive mode activated. Monitoring alertness...');
+                startDriveModeMonitoring();
+            } else {
+                updateOutput('Drive mode deactivated');
+                stopDriveModeMonitoring();
+            }
+        }
+
+        let alertnessCheck;
+        function startDriveModeMonitoring() {
+            // Simulated drowsiness detection
+            alertnessCheck = setInterval(() => {
+                if (Math.random() < 0.1) { // Simulated drowsiness detection
+                    playAlert();
+                }
+            }, 10000);
+        }
+
+        function stopDriveModeMonitoring() {
+            clearInterval(alertnessCheck);
+        }
+
+        function playAlert() {
+            const audio = new Audio('https://assets.mixkit.co/sfx/preview/mixkit-alarm-digital-clock-beep-989.mp3');
+            audio.play();
+            updateOutput('ALERT! Stay awake!');
+        }
+
+        document.getElementById('startBtn').addEventListener('click', () => {
+            if (!isListening) {
+                recognition.start();
+                isListening = true;
+                document.getElementById('startBtn').innerHTML = '<i class="bi bi-mic-mute-fill mr-2"></i>Stop Listening';
+                updateOutput('Listening...');
+            } else {
+                recognition.stop();
+                isListening = false;
+                document.getElementById('startBtn').innerHTML = '<i class="bi bi-mic-fill mr-2"></i>Start Listening';
+                updateOutput('Stopped listening');
+            }
+        });
+
+        // Check for required permissions
+        async function checkPermissions() {
+            try {
+                await navigator.mediaDevices.getUserMedia({ audio: true });
+                if ('Notification' in window) {
+                    await Notification.requestPermission();
+                }
+            } catch (err) {
+                updateOutput('Please enable microphone access to use voice commands');
+            }
+        }
+
+        checkPermissions();
+    </script>
+<script>document.body.addEventListener('wheel', e => { if (!e.ctrlKey) return; e.preventDefault(); return }, { passive: false })</script>
+	</body>
+</html>
